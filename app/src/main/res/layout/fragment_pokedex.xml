@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clickable="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/holo_red_dark">
 
@@ -84,6 +85,7 @@
 
     <Button
         android:text="@string/button_text"
+        android:id="@+id/button_on"
         android:textColor="@android:color/white"
         android:layout_margin="10dp"
         android:background="@android:color/holo_blue_dark"
