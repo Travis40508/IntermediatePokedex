@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">IntermediatePokedex</string>
+    <string name="input_hint">Please Enter Pokemon Name</string>
+    <string name="button_text">On</string>
 </resources>
