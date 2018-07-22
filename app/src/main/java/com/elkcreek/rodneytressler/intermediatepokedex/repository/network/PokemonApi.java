@@ -37,6 +37,10 @@ public interface PokemonApi {
         public int getPokemonHeight() {
             return pokemonHeight;
         }
+
+        public Sprites getPokemonSprites() {
+            return pokemonSprites;
+        }
     }
 
     class Sprites {

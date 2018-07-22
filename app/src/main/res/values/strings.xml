@@ -3,4 +3,6 @@
     <string name="input_hint">Please Enter Pokemon Name</string>
     <string name="button_text">On</string>
     <string name="api_base_url">https://pokeapi.co/api/v2/pokemon/</string>
+    <string name="search_button_text">Search</string>
+    <string name="service_error_message">Error Communicating With the Server - Please Try Again</string>
 </resources>

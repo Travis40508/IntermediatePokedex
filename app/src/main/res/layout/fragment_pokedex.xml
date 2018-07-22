@@ -7,7 +7,7 @@
     android:background="@android:color/holo_red_dark">
 
 
-    <View
+    <FrameLayout
         android:id="@+id/pokedex_screen"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -17,11 +17,14 @@
         android:layout_height="300dp"/>
 
     <ProgressBar
+        android:id="@+id/pokemon_progress_bar"
+        android:elevation="5dp"
         app:layout_constraintTop_toTopOf="@id/pokedex_screen"
         app:layout_constraintEnd_toEndOf="@id/pokedex_screen"
         app:layout_constraintStart_toStartOf="@id/pokedex_screen"
         app:layout_constraintBottom_toBottomOf="@id/pokedex_screen"
         android:layout_width="wrap_content"
+        android:visibility="gone"
         android:layout_height="wrap_content" />
 
     <ImageView
@@ -30,19 +33,21 @@
         app:layout_constraintBottom_toBottomOf="@id/pokedex_screen"
         app:layout_constraintStart_toStartOf="@id/pokedex_screen"
         app:layout_constraintEnd_toEndOf="@id/pokedex_screen"
-        android:layout_width="50dp"
-        android:layout_height="50dp" />
+        android:layout_width="200dp"
+        android:layout_height="200dp" />
 
     <TextView
         android:id="@+id/text_pokemon_name"
         app:layout_constraintTop_toBottomOf="@id/image_pokemon"
         app:layout_constraintStart_toStartOf="@id/pokedex_screen"
         app:layout_constraintEnd_toEndOf="@id/pokedex_screen"
+        android:textSize="24sp"
+        android:textAllCaps="true"
         android:textColor="@android:color/black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <View
+    <FrameLayout
         android:id="@+id/pokemon_stats_screen"
         app:layout_constraintTop_toBottomOf="@id/pokedex_screen"
         app:layout_constraintStart_toStartOf="@id/pokedex_screen"
@@ -51,28 +56,36 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"/>
 
-    <TextView
-        android:id="@+id/text_pokemon_height"
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
         app:layout_constraintTop_toTopOf="@id/pokemon_stats_screen"
+        app:layout_constraintBottom_toBottomOf="@id/pokemon_stats_screen"
         app:layout_constraintStart_toStartOf="@id/pokemon_stats_screen"
-        android:layout_margin="10dp"
-        android:textColor="@android:color/black"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_marginStart="10dp">
 
-    <TextView
-        android:id="@+id/text_pokemon_weight"
-        app:layout_constraintTop_toBottomOf="@id/text_pokemon_height"
-        app:layout_constraintStart_toStartOf="@id/pokemon_stats_screen"
-        android:layout_margin="10dp"
-        android:textColor="@android:color/black"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/text_pokemon_height"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/text_pokemon_weight"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
     <EditText
         android:id="@+id/input_pokemon_name"
         app:layout_constraintTop_toBottomOf="@id/pokemon_stats_screen"
         app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="10dp"
         android:layout_margin="10dp"
         android:background="@android:color/black"
         android:maxLines="1"
@@ -91,6 +104,17 @@
         android:background="@android:color/holo_blue_dark"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/button_search"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_margin="10dp"
+        android:background="@android:color/holo_blue_dark"
+        android:textColor="@android:color/white"
+        android:text="@string/search_button_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
