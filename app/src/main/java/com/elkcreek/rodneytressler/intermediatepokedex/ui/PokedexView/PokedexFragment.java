@@ -1,5 +1,6 @@
 package com.elkcreek.rodneytressler.intermediatepokedex.ui.PokedexView;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,12 +13,19 @@ import com.elkcreek.rodneytressler.intermediatepokedex.R;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import dagger.android.support.AndroidSupportInjection;
 
 public class PokedexFragment extends Fragment implements PokedexView {
 
     @OnClick(R.id.button_on)
     protected void onButtonClicked() {
 
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        AndroidSupportInjection.inject(this);
+        super.onAttach(context);
     }
 
     @Nullable
