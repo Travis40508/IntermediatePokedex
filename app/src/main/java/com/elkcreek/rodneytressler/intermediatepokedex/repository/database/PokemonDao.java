@@ -6,7 +6,10 @@ import android.arch.persistence.room.Query;
 
 import com.elkcreek.rodneytressler.intermediatepokedex.repository.network.PokemonApi;
 
+import java.util.List;
+
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 
 import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
@@ -17,5 +20,8 @@ public interface PokemonDao {
     void insertPokemon(PokemonApi.Pokemon pokemon);
 
     @Query("SELECT * FROM pokemon WHERE pokemonName LIKE :pokemonName")
-    PokemonApi.Pokemon findPokemonByName(String pokemonName);
+    Single<PokemonApi.Pokemon> findPokemonByName(String pokemonName);
+
+    @Query("SELECT * FROM pokemon")
+    List<PokemonApi.Pokemon> getAllSavedPokemon();
 }

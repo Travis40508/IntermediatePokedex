@@ -1,5 +1,6 @@
 package com.elkcreek.rodneytressler.intermediatepokedex.ui.PokedexView;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
 import com.elkcreek.rodneytressler.intermediatepokedex.common.utils.MVPUtil;
@@ -9,7 +10,10 @@ import com.elkcreek.rodneytressler.intermediatepokedex.repository.network.Pokemo
 
 import javax.inject.Inject;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class PokedexPresenter implements MVPUtil.BasePresenter<PokedexView> {
 
@@ -49,30 +53,42 @@ public class PokedexPresenter implements MVPUtil.BasePresenter<PokedexView> {
         view.showProgressBar();
         view.clearPokemonInput();
 
-        //TODO figure out how to store pokemmon in database and check that first before performing network call
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                PokemonApi.Pokemon searchedPokemon = pokemonDatabaseService.getPokemonByName(pokemonName);
-                if (searchedPokemon != null) {
+        checkDatabase(pokemonName);
+
+    }
+
+    @SuppressLint("CheckResult")
+    private void checkDatabase(String pokemonName) {
+        pokemonDatabaseService.findPokemonByName(pokemonName)
+                .subscribe(pokemon -> {
                     view.hideProgressBar();
-                    view.showPokemonSprite(searchedPokemon.getSpriteUrl());
-                    view.showPokemonName(searchedPokemon.getPokemonName());
-                    view.showPokemonWeight("Weight - " + searchedPokemon.getPokemonWeight());
-                    view.showPokemonHeight("Height - " + searchedPokemon.getPokemonHeight());
-                } else {
-                    disposable.add(pokemonService.getPokemon(pokemonName)
-                            .subscribe(pokemon -> {
-                                pokemonDatabaseService.insertPokemon(pokemon);
-                                searchClicked(pokemonName);
-                            }, throwable -> {
-                                view.showErrorToast();
-                                view.hideProgressBar();
-                            }));
-                }
-            }
-        });
+                    view.clearPokemonInput();
+                    view.showPokemonSprite(pokemon.getSpriteUrl());
+                    view.showPokemonName(pokemon.getPokemonName());
+                    view.showPokemonHeight("Height - " + pokemon.getPokemonHeight());
+                    view.showPokemonWeight("Weight - " + pokemon.getPokemonWeight());
+                }, throwable -> {
+                    performNetworkCall(pokemonName);
+                });
 
 
     }
+
+    private void performNetworkCall(String pokemonName) {
+        disposable.add(pokemonService.getPokemon(pokemonName)
+                .subscribe(pokemon -> {
+                    view.hideProgressBar();
+                    view.clearPokemonInput();
+                    pokemon.setSpriteUrl(pokemon.getPokemonSprites().getPokemonFrontSprite());
+                    view.showPokemonSprite(pokemon.getSpriteUrl());
+                    view.showPokemonName(pokemon.getPokemonName());
+                    view.showPokemonHeight("Height - " + pokemon.getPokemonHeight());
+                    view.showPokemonWeight("Weight - " + pokemon.getPokemonWeight());
+                    pokemonDatabaseService.insertPokemon(pokemon);
+                }, throwable -> {
+                    view.hideProgressBar();
+                    view.showErrorToast();
+                }));
+    }
+
 }
