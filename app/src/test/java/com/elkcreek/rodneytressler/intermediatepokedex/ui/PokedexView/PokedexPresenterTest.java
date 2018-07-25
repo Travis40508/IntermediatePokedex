@@ -4,6 +4,7 @@ import com.elkcreek.rodneytressler.intermediatepokedex.repository.database.Pokem
 import com.elkcreek.rodneytressler.intermediatepokedex.repository.network.PokemonApi;
 import com.elkcreek.rodneytressler.intermediatepokedex.repository.network.PokemonService;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,6 +20,8 @@ import io.reactivex.observers.TestObserver;
 import io.reactivex.subscribers.TestSubscriber;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
 
 public class PokedexPresenterTest {
 
@@ -38,104 +41,88 @@ public class PokedexPresenterTest {
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        presenter = Mockito.spy(new PokedexPresenter(pokemonService, pokemonDatabaseService));
+        presenter = spy(new PokedexPresenter(pokemonService, pokemonDatabaseService));
         presenter.setView(pokedexView);
         presenter.subscribe();
 
         pokemonName = "Bulbasaur";
         pokemon = new PokemonApi.Pokemon();
+        pokemon.setPokemonSprites(new PokemonApi.Sprites());
         pokemon.setSpriteUrl("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png");
+
+        doReturn(Single.just(pokemon)).when(pokemonDatabaseService).findPokemonByName(eq(pokemonName));
+        doReturn(Observable.just(pokemon)).when(pokemonService).getPokemon(eq(pokemonName));
+    }
+
+    @After
+    public void tearDown() throws Exception{
+        presenter.unsubscribe();
     }
 
     @Test
     public void verifyOnButtonTurnsPokedexScreenOn() {
         presenter.onButtonClicked();
-
-        Mockito.verify(pokedexView).turnOnPokedexScreen();
+        verify(pokedexView).turnOnPokedexScreen();
     }
 
     @Test
     public void verifyOnButtonTurnsOnStatsScreen() {
         presenter.onButtonClicked();
-
-        Mockito.verify(pokedexView).turnOnStatsScreen();
+        verify(pokedexView).turnOnStatsScreen();
     }
 
     @Test
     public void verifyOnButtonTurnsOnSearchScreen() {
         presenter.onButtonClicked();
-
-        Mockito.verify(pokedexView).turnOnPokemonSearchScreen();
+        verify(pokedexView).turnOnPokemonSearchScreen();
     }
 
     @Test
     public void verifySearchButtonShowsProgressBar() {
-        Mockito.when(pokemonDatabaseService.findPokemonByName(pokemonName)).thenReturn(Single.just(pokemon));
         presenter.searchClicked(pokemonName);
-
-        Mockito.verify(pokedexView).showProgressBar();
+        verify(pokedexView).showProgressBar();
     }
 
     @Test
     public void verifySearchButtonClearsEditTest() {
-        Mockito.when(pokemonDatabaseService.findPokemonByName(pokemonName)).thenReturn(Single.just(pokemon));
         presenter.searchClicked(pokemonName);
-
-        Mockito.verify(pokedexView).clearPokemonInput();
+        verify(pokedexView).clearPokemonInput();
     }
 
     @Test
     public void verifySpriteShownWhenDataseContainsPokemon() {
-        Mockito.when(pokemonDatabaseService.findPokemonByName(pokemonName)).thenReturn(Single.just(pokemon));
-        presenter.checkDatabase(pokemonName);
-
-        Mockito.verify(pokedexView).showPokemonSprite(pokemon.getSpriteUrl());
+        presenter.findPokemon(pokemonName);
+        verify(pokedexView).showPokemonSprite(eq(pokemon.getSpriteUrl()));
     }
 
     @Test
     public void verifyHideProgressBarOnSuccessfulDatabasePokemonReturn() {
-        Mockito.when(pokemonDatabaseService.findPokemonByName(pokemonName)).thenReturn(Single.just(pokemon));
-        presenter.checkDatabase(pokemonName);
-
-        Mockito.verify(pokedexView).hideProgressBar();
+        presenter.findPokemon(pokemonName);
+        verify(pokedexView).hideProgressBar();
     }
 
     @Test
     public void verifyShowPokemonNameOnSuccessfulPokemonDatabaseReturn() {
-        Mockito.when(pokemonDatabaseService.findPokemonByName(pokemonName)).thenReturn(Single.just(pokemon));
-        presenter.checkDatabase(pokemonName);
-
-        Mockito.verify(pokedexView).showPokemonName(pokemon.getPokemonName());
+        presenter.findPokemon(pokemonName);
+        verify(pokedexView).showPokemonName(eq(pokemon.getPokemonName()));
     }
 
     @Test
     public void verifyShowWeightOnSuccessfulPokemonDatabaseReturn() {
-        Mockito.when(pokemonDatabaseService.findPokemonByName(pokemonName)).thenReturn(Single.just(pokemon));
-        presenter.checkDatabase(pokemonName);
-
-        Mockito.verify(pokedexView).showPokemonWeight("Weight - " + pokemon.getPokemonWeight());
+        presenter.findPokemon(pokemonName);
+        verify(pokedexView).showPokemonWeight(eq("Weight - " + pokemon.getPokemonWeight()));
     }
 
     @Test
     public void verifyShowHeightOnSuccessfulPokemonDatabaseReturn() {
-        Mockito.when(pokemonDatabaseService.findPokemonByName(pokemonName)).thenReturn(Single.just(pokemon));
-        presenter.checkDatabase(pokemonName);
-
-        Mockito.verify(pokedexView).showPokemonHeight("Height - " + pokemon.getPokemonWeight());
-    }
-
-    @Test(expected = Exception.class)
-    public void verifyThrowableCallWheneverUnSuccessfulPokemonDatabaseReturn() {
-        Mockito.when(pokemonDatabaseService.findPokemonByName(pokemonName)).thenThrow(Exception.class);
-        presenter.checkDatabase(pokemonName);
+        presenter.findPokemon(pokemonName);
+        verify(pokedexView).showPokemonHeight(eq("Height - " + pokemon.getPokemonWeight()));
     }
 
     @Test
     public void verifySpriteShownWhenNetworkCallSuccessful() {
-        Mockito.when(pokemonService.getPokemon(pokemonName)).thenReturn(Observable.just(pokemon));
-        presenter.performNetworkCall(pokemonName);
-
-        Mockito.verify(pokedexView).showPokemonSprite(pokemon.getSpriteUrl());
+        presenter.findPokemon(pokemonName);
+        verify(pokedexView).showPokemonSprite(eq(pokemon.getSpriteUrl()));
     }
 
 }

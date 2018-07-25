@@ -1,8 +1,5 @@
 package com.elkcreek.rodneytressler.intermediatepokedex.ui.PokedexView;
 
-import android.annotation.SuppressLint;
-import android.os.AsyncTask;
-
 import com.elkcreek.rodneytressler.intermediatepokedex.common.utils.MVPUtil;
 import com.elkcreek.rodneytressler.intermediatepokedex.repository.database.PokemonDatabaseService;
 import com.elkcreek.rodneytressler.intermediatepokedex.repository.network.PokemonApi;
@@ -11,9 +8,8 @@ import com.elkcreek.rodneytressler.intermediatepokedex.repository.network.Pokemo
 import javax.inject.Inject;
 
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.functions.Consumer;
 
 public class PokedexPresenter implements MVPUtil.BasePresenter<PokedexView> {
 
@@ -53,39 +49,48 @@ public class PokedexPresenter implements MVPUtil.BasePresenter<PokedexView> {
         view.showProgressBar();
         view.clearPokemonInput();
 
-        checkDatabase(pokemonName);
+        findPokemon(pokemonName);
     }
 
-    @SuppressLint("CheckResult")
-    public void checkDatabase(String pokemonName) {
-        disposable.add(pokemonDatabaseService.findPokemonByName(pokemonName)
-                .subscribe(pokemon -> {
-                    view.hideProgressBar();
-                    view.showPokemonSprite(pokemon.getSpriteUrl());
-                    view.showPokemonName(pokemon.getPokemonName());
-                    view.showPokemonHeight("Height - " + pokemon.getPokemonHeight());
-                    view.showPokemonWeight("Weight - " + pokemon.getPokemonWeight());
-                }, throwable -> {
-                    performNetworkCall(pokemonName);
-                }));
-
-
+    private Observable<PokemonApi.Pokemon> findInDatabase(String name) {
+        return pokemonDatabaseService.findPokemonByName(name).toObservable();
     }
 
-    public void performNetworkCall(String pokemonName) {
-        disposable.add(pokemonService.getPokemon(pokemonName)
-                .subscribe(pokemon -> {
-                    view.hideProgressBar();
-                    pokemon.setSpriteUrl(pokemon.getPokemonSprites().getPokemonFrontSprite());
-                    view.showPokemonSprite(pokemon.getSpriteUrl());
-                    view.showPokemonName(pokemon.getPokemonName());
-                    view.showPokemonHeight("Height - " + pokemon.getPokemonHeight());
-                    view.showPokemonWeight("Weight - " + pokemon.getPokemonWeight());
-                    pokemonDatabaseService.insertPokemon(pokemon);
-                }, throwable -> {
-                    view.hideProgressBar();
-                    view.showErrorToast();
-                }));
+    private Observable<PokemonApi.Pokemon> fetchFromNetwork(String name) {
+        return pokemonService.getPokemon(name)
+                // save pokemon to database for next call
+                .doOnNext(pokemonDatabaseService::insertPokemon);
     }
 
+    private Observable<PokemonApi.Pokemon> findInDatabaseElseFetchFromNetwork(String name) {
+        return findInDatabase(name)
+                // if error, return empty observable
+                .onErrorResumeNext(Observable.empty())
+                // switch to network if empty
+                .switchIfEmpty(fetchFromNetwork(name));
+    }
+
+    private Consumer<PokemonApi.Pokemon> updateUiForPokemon() {
+        return pokemon -> {
+            view.hideProgressBar();
+            if (pokemon.getSpriteUrl() == null || pokemon.getSpriteUrl().isEmpty()) {
+                pokemon.setSpriteUrl(pokemon.getPokemonSprites().getPokemonFrontSprite());
+            }
+            view.showPokemonSprite(pokemon.getSpriteUrl());
+            view.showPokemonName(pokemon.getPokemonName());
+            view.showPokemonHeight("Height - " + pokemon.getPokemonHeight());
+            view.showPokemonWeight("Weight - " + pokemon.getPokemonWeight());
+        };
+    }
+
+    private Consumer<Throwable> handlerError() {
+        return throwable -> {
+            view.hideProgressBar();
+            view.showErrorToast();
+        };
+    }
+
+    public void findPokemon(String name) {
+        disposable.add(findInDatabaseElseFetchFromNetwork(name).subscribe(updateUiForPokemon(), handlerError()));
+    }
 }
