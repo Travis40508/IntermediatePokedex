@@ -127,6 +127,7 @@ public class PokedexPresenterTest {
         doReturn(Single.error(NoSuchElementException::new)).when(pokemonDatabaseService).findPokemonByName(eq(pokemonName));
         presenter.findPokemon(pokemonName);
         verify(pokemonService).getPokemon(eq(pokemonName));
+        verify(pokemonDatabaseService).insertPokemon(eq(pokemon));
         verify(pokedexView).showPokemonSprite(eq(pokemon.getSpriteUrl()));
     }
 
