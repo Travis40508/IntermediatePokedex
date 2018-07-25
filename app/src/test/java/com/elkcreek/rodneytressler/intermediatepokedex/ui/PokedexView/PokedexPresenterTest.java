@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.util.NoSuchElementException;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -121,7 +123,10 @@ public class PokedexPresenterTest {
 
     @Test
     public void verifySpriteShownWhenNetworkCallSuccessful() {
+        // throw error when return from pokemon database service for this test only
+        doReturn(Single.error(NoSuchElementException::new)).when(pokemonDatabaseService).findPokemonByName(eq(pokemonName));
         presenter.findPokemon(pokemonName);
+        verify(pokemonService).getPokemon(eq(pokemonName));
         verify(pokedexView).showPokemonSprite(eq(pokemon.getSpriteUrl()));
     }
 
