@@ -7,21 +7,13 @@ import com.elkcreek.rodneytressler.intermediatepokedex.repository.network.Pokemo
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.NoSuchElementException;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.SingleObserver;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.observers.TestObserver;
-import io.reactivex.subscribers.TestSubscriber;
-
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doReturn;
 
@@ -54,6 +46,7 @@ public class PokedexPresenterTest {
 
         doReturn(Single.just(pokemon)).when(pokemonDatabaseService).findPokemonByName(eq(pokemonName));
         doReturn(Observable.just(pokemon)).when(pokemonService).getPokemon(eq(pokemonName));
+        when(pokemonService.getPokemon(pokemonName)).thenReturn(Observable.just(pokemon));
     }
 
     @After
@@ -126,9 +119,19 @@ public class PokedexPresenterTest {
         // throw error when return from pokemon database service for this test only
         doReturn(Single.error(NoSuchElementException::new)).when(pokemonDatabaseService).findPokemonByName(eq(pokemonName));
         presenter.findPokemon(pokemonName);
+
+        //API Call made
         verify(pokemonService).getPokemon(eq(pokemonName));
+
+        //Pokemon retrieved and inserted into database
         verify(pokemonDatabaseService).insertPokemon(eq(pokemon));
+
+        //Pokemon info displayed on view
         verify(pokedexView).showPokemonSprite(eq(pokemon.getSpriteUrl()));
+        verify(pokedexView).hideProgressBar();
+        verify(pokedexView).showPokemonWeight("Weight - " + pokemon.getPokemonWeight());
+        verify(pokedexView).showPokemonHeight("Height - " + pokemon.getPokemonHeight());
+        verify(pokedexView).showPokemonName(pokemon.getPokemonName());
     }
 
 }
