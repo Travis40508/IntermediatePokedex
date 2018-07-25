@@ -54,31 +54,28 @@ public class PokedexPresenter implements MVPUtil.BasePresenter<PokedexView> {
         view.clearPokemonInput();
 
         checkDatabase(pokemonName);
-
     }
 
     @SuppressLint("CheckResult")
-    private void checkDatabase(String pokemonName) {
-        pokemonDatabaseService.findPokemonByName(pokemonName)
+    public void checkDatabase(String pokemonName) {
+        disposable.add(pokemonDatabaseService.findPokemonByName(pokemonName)
                 .subscribe(pokemon -> {
                     view.hideProgressBar();
-                    view.clearPokemonInput();
                     view.showPokemonSprite(pokemon.getSpriteUrl());
                     view.showPokemonName(pokemon.getPokemonName());
                     view.showPokemonHeight("Height - " + pokemon.getPokemonHeight());
                     view.showPokemonWeight("Weight - " + pokemon.getPokemonWeight());
                 }, throwable -> {
                     performNetworkCall(pokemonName);
-                });
+                }));
 
 
     }
 
-    private void performNetworkCall(String pokemonName) {
+    public void performNetworkCall(String pokemonName) {
         disposable.add(pokemonService.getPokemon(pokemonName)
                 .subscribe(pokemon -> {
                     view.hideProgressBar();
-                    view.clearPokemonInput();
                     pokemon.setSpriteUrl(pokemon.getPokemonSprites().getPokemonFrontSprite());
                     view.showPokemonSprite(pokemon.getSpriteUrl());
                     view.showPokemonName(pokemon.getPokemonName());
